@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as satellite from 'satellite.js';
 import getStarfield from "./src/getStarfield.js";
 import { getFreshnelMat } from "./src/getFreshnelMat.js";
+// import {prompt} from "./features/fireball.js";
 
 const w = window.innerWidth;
 const h = window.innerHeight;
@@ -444,45 +445,42 @@ function createAsteroidSprite(emoji) {
 
 // Add a new function to load the asteroid data
 function loadAsteroidData() {
-    fetch('./Recent_close _approach_asteroid_near_earth.json')
+    fetch('./Recent_close_approach_asteroid_near_earth.json')
         .then(response => response.json())
         .then(asteroidData => {
-            console.log(asteroidData)
-            const { 
-                "Object designation": objectDesignation,
-                "Miss distance in km": missDistanceKm,
-                "Diameter in m": diameter,
-                "Relative\nvelocity in km/s": relativeVelocity
-            } = asteroidData;
+            console.log(asteroidData);
+
+            // Ensure to reference properties correctly, especially for keys with spaces or special characters
+            const objectDesignation = asteroidData["Object designation"];
+            const missDistanceKm = asteroidData["Miss distance in km"];
+            const diameter = asteroidData["Diameter in m"];
+            const relativeVelocity = asteroidData["Relative\nvelocity in km/s"];
+
+            // Log the asteroid data to verify
+            console.log('Asteroid:', objectDesignation, missDistanceKm, diameter, relativeVelocity);
 
             // Create a new sprite or mesh for the asteroid
-            const asteroidSprite = createAsteroidSprite(' 😂 '); // Create a sprite (can be an emoji or image)
+            const asteroidSprite = createAsteroidSprite('😂');  // You can use another emoji if desired
             
-            // Position asteroid based on miss distance
-            const distanceFromEarth = missDistanceKm / 6371; // Convert miss distance to Earth radii
-            function calculateAsteroidPosition(missDistanceKm, theta = 0, phi = Math.PI / 4) {
-                const r = missDistanceKm; // Use the miss distance as radius
-                const x = r * Math.cos(theta) * Math.sin(phi);
-                const y = r * Math.sin(theta) * Math.sin(phi);
-                const z = r * Math.cos(phi);
-                return { x, y, z };
-            }
-            calculateAsteroidPosition(missDistanceKm,0,Math.PI/4)
-                    // Set asteroid's position
-        asteroidSprite.position.set(x, y, z);
+            // Position asteroid based on miss distance (assume distance is in km)
+            const distanceFromEarth = 1 + (missDistanceKm / 6371);  // Adjust scale based on Earth's radius (6371 km)
 
-        // Add asteroid to the scene and store in arrays for future interaction
-        scene.add(asteroidSprite);
-        
-        asteroid.push({ objectDesignation, diameter, relativeVelocity });
-        asteroidSprites.push(asteroidSprite);
-        asteroidSprite.scale.set(0.5, 0.5, 0.5);  // Adjust this scale for better visibility
+            // Random positioning example for now (you can adjust based on real data)
+            const x = distanceFromEarth * (Math.random() - 0.5);
+            const y = distanceFromEarth * (Math.random() - 0.5);
+            const z = distanceFromEarth * (Math.random() - 0.5);
 
-    })
-    .catch(error => console.error('Error loading asteroid data:', error));
-
+            // Set asteroid sprite position
+            asteroidSprite.position.set(x, y, z);
+            
+            // Add the asteroid sprite to the scene
+            scene.add(asteroidSprite);
+            asteroidSprites.push(asteroidSprite);  // Store it in the asteroidSprites array for future use
+        })
+        .catch(error => console.log('Error loading asteroid data:', error));
 }
-loadAsteroidData()
+
+loadAsteroidData();
 
 
 // Modify the hover check function to handle asteroids as well
@@ -511,7 +509,51 @@ function checkAsteroidHover() {
 }
 
 
-loadAsteroidData();  // Call this once during the initial setup
+// Example of fetching the fireball data and displaying it
+fetch('/cneos_fireball_data.json')
+   .then(response => response.json())
+   .then(data => {
+       displayFireballOnEarth(data, scene, camera);
+   });
+
+export function displayFireballOnEarth(data, scene, camera) {
+    const earthRadius = 6371; // Earth's radius in km
+    const latitude = parseFloat(data["Latitude (deg.)"]);
+    const longitude = parseFloat(data["Longitude (deg.)"]);
+    const altitude = parseFloat(data["Altitude (km)"]);
+
+    // Convert the latitude, longitude, and altitude to 3D coordinates
+    const fireballPosition = latLongToVector3(latitude, longitude, earthRadius, altitude);
+    console.log("Fireball Position:", fireballPosition); // Debugging
+
+    // Create a sphere to represent the fireball
+    const fireballGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const fireballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Consider using Phong or Lambert for lighting effects
+    const fireballMesh = new THREE.Mesh(fireballGeometry, fireballMaterial);
+
+    fireballMesh.position.copy(fireballPosition);
+    scene.add(fireballMesh);
+
+    // Setup raycaster for hover detection
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    window.addEventListener('mousemove', onMouseMove, false);
+
+    function onMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(fireballMesh);
+
+        if (intersects.length > 0) {
+            const label = createLabel(`Velocity: ${data["Velocity (km/s)"]} km/s`);
+            updateLabelPosition(fireballMesh, camera);
+        }
+    }
+}
+
 
 function animate() {
     requestAnimationFrame(animate);
@@ -528,7 +570,6 @@ function animate() {
     followSatellite();
     renderer.render(scene, camera);
 }
-
 
 
 window.addEventListener('click', onSatelliteClick);

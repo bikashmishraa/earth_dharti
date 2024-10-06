@@ -79,8 +79,6 @@ let satellites = [];
 let satelliteSprites = [];
 const maxSatellites = 3000;
 
-// Asteroid Data
-let asteroids = [];
 
 // Variables to store mouse position
 let mouseX = 0;
@@ -127,8 +125,6 @@ function loadSatelliteData() {
 }
 
 loadSatelliteData();
-
-
 
 // Raycaster for detecting hover
 const raycaster = new THREE.Raycaster();
@@ -250,9 +246,58 @@ function zoomToSatellite(satelliteSprite) {
     zoom();
 }
 
-// Function to handle satellite click
-let isTooltipVisible = false;
+// Define variables for the path
+let satellitePath = null;
 
+// Function to load satellite path for the clicked satellite
+function loadSatellitePathForClickedSatellite(satrec, maxPoints = 100) {
+    if (satellitePath) {
+        scene.remove(satellitePath);
+    }
+
+    const points = [];
+    const gmst = satellite.gstime(new Date());
+    const totalDuration = 5400;  
+    const timeStep = totalDuration / maxPoints;
+
+    for (let t = 0; t < maxPoints; t++) {
+        const timeOffset = t * timeStep; 
+        const date = new Date(Date.now() + timeOffset * 1000);
+        const positionAndVelocity = satellite.propagate(satrec, date);
+        const positionEci = positionAndVelocity.position;
+
+        if (positionEci) {
+            const positionGd = satellite.eciToGeodetic(positionEci, gmst);
+            const longitude = satellite.degreesLong(positionGd.longitude) * (Math.PI / 180);
+            const latitude = satellite.degreesLat(positionGd.latitude) * (Math.PI / 180);
+            const altitude = positionGd.height;
+
+            const radius = 1 + altitude / 6371; 
+            const x = radius * Math.cos(latitude) * Math.cos(longitude);
+            const y = radius * Math.cos(latitude) * Math.sin(longitude);
+            const z = radius * Math.sin(latitude);
+
+            points.push(new THREE.Vector3(x, y, z));
+        }
+    }
+
+    // Smooth path by adding more interpolated points if needed
+    if (points.length > 1) {
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        satellitePath = new THREE.Line(geometry, material);
+        scene.add(satellitePath);
+    }
+
+
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    satellitePath = new THREE.Line(geometry, material);
+    scene.add(satellitePath);
+}
+
+// Modified onSatelliteClick function to show the path of the clicked satellite
 function onSatelliteClick(event) {
     clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -262,40 +307,14 @@ function onSatelliteClick(event) {
 
     if (intersects.length > 0) {
         const clickedSatellite = intersects[0].object;
-        zoomToSatellite(clickedSatellite);  // Zoom into the clicked satellite
-    }
-
-    if (intersects.length > 0) {
-        const index = satelliteSprites.indexOf(intersects[0].object);
+        const index = satelliteSprites.indexOf(clickedSatellite);
         if (index !== -1) {
-            tooltip.style.display = 'block';
-            tooltip.style.left = `${event.clientX + 15}px`;
-            tooltip.style.top = `${event.clientY + 15}px`;
+            const satrec = satellites[index].satrec;
+            zoomToSatellite(clickedSatellite);  // Zoom into the clicked satellite
 
-            // Get TLE data for the hovered satellite
-            const tleLines = satellites[index].tle.split('\n');
-
-            // Update the tooltip to display the first line of TLE data
-            tooltip.innerHTML = tleLines[0].slice(1);
-
-            // Update the satellite data table with the satellite's details
-            document.getElementById('container').style.width = '300px';
-            document.getElementById('satelliteName').textContent = tleLines[0].slice(1) || 'N/A';
-            document.getElementById('tleLine1').textContent = tleLines[1].slice(1) || 'N/A';
-            document.getElementById('tleLine2').textContent = tleLines[2].slice(1) || 'N/A';
-
-            // Prevent the tooltip from disappearing
-            isTooltipVisible = true;
-            updateTooltipPosition(event);
+            // Load and display the satellite's path
+            loadSatellitePathForClickedSatellite(satrec);
         }
-    } else if (!isTooltipVisible) {
-        // Hide tooltip if no satellite is hovered
-        tooltip.style.display = 'none';
-        
-        // Optionally, clear the table when not hovering over any satellite
-        document.getElementById('satelliteName').textContent = 'N/A';
-        document.getElementById('tleLine1').textContent = 'N/A';
-        document.getElementById('tleLine2').textContent = 'N/A';
     }
 }
 
@@ -402,6 +421,98 @@ function loadSatellitePaths(scene, maxPoints = 54) {
 const button = document.getElementById('path');
 button.addEventListener('click', () => loadSatellitePaths(scene, 54)); // Pass the scene and maxPoints when calling the function
 
+let isTooltipVisible = false; // Initialize tooltip visibility state
+
+let asteroid =[];
+let asteroidSprites=[];
+// Create a function to generate asteroid sprite
+function createAsteroidSprite(emoji) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 64;
+    canvas.height = 64;
+    context.font = '50px serif';
+    context.fillText(emoji, 10, 50);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(1, 1, 1);  // Adjust the size for asteroid
+
+    return sprite;
+}
+
+// Add a new function to load the asteroid data
+function loadAsteroidData() {
+    fetch('./Recent_close _approach_asteroid_near_earth.json')
+        .then(response => response.json())
+        .then(asteroidData => {
+            console.log(asteroidData)
+            const { 
+                "Object designation": objectDesignation,
+                "Miss distance in km": missDistanceKm,
+                "Diameter in m": diameter,
+                "Relative\nvelocity in km/s": relativeVelocity
+            } = asteroidData;
+
+            // Create a new sprite or mesh for the asteroid
+            const asteroidSprite = createAsteroidSprite(' 😂 '); // Create a sprite (can be an emoji or image)
+            
+            // Position asteroid based on miss distance
+            const distanceFromEarth = missDistanceKm / 6371; // Convert miss distance to Earth radii
+            function calculateAsteroidPosition(missDistanceKm, theta = 0, phi = Math.PI / 4) {
+                const r = missDistanceKm; // Use the miss distance as radius
+                const x = r * Math.cos(theta) * Math.sin(phi);
+                const y = r * Math.sin(theta) * Math.sin(phi);
+                const z = r * Math.cos(phi);
+                return { x, y, z };
+            }
+            calculateAsteroidPosition(missDistanceKm,0,Math.PI/4)
+                    // Set asteroid's position
+        asteroidSprite.position.set(x, y, z);
+
+        // Add asteroid to the scene and store in arrays for future interaction
+        scene.add(asteroidSprite);
+        
+        asteroid.push({ objectDesignation, diameter, relativeVelocity });
+        asteroidSprites.push(asteroidSprite);
+        asteroidSprite.scale.set(0.5, 0.5, 0.5);  // Adjust this scale for better visibility
+
+    })
+    .catch(error => console.error('Error loading asteroid data:', error));
+
+}
+loadAsteroidData()
+
+
+// Modify the hover check function to handle asteroids as well
+function checkAsteroidHover() {
+    raycaster.setFromCamera(mouse, camera);
+    
+    // Check if the mouse is hovering over any asteroid
+    const intersects = raycaster.intersectObjects(asteroidSprites, true);
+
+    if (intersects.length > 0) {
+        const asteroid = intersects[0].object.userData;
+
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${mouseX + 15}px`;
+        tooltip.style.top = `${mouseY + 15}px`;
+
+        // Display asteroid data in the tooltip
+        tooltip.innerHTML = `
+            <strong>Asteroid:</strong> ${asteroid.designation} <br />
+            <strong>Diameter:</strong> ${asteroid.diameter} m<br />
+            <strong>Velocity:</strong> ${asteroid.velocity} km/s
+        `;
+    } else {
+        tooltip.style.display = 'none';
+    }
+}
+
+
+loadAsteroidData();  // Call this once during the initial setup
+
 function animate() {
     requestAnimationFrame(animate);
 
@@ -410,11 +521,15 @@ function animate() {
     cloudMesh.rotation.y -= 0.002;
     glowMesh.rotation.y -= 0.002;
     stars.rotation.y -= 0.0002;
+
     updateSatellitePositions();
     checkSatelliteHover();
+    checkAsteroidHover();  // Check for asteroid hover interactions
     followSatellite();
     renderer.render(scene, camera);
 }
+
+
 
 window.addEventListener('click', onSatelliteClick);
 window.addEventListener('mousemove', onMouseMove);

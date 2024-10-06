@@ -36,26 +36,26 @@ const detail = 12;
 const loader = new THREE.TextureLoader();
 const geometry = new THREE.SphereGeometry(1);
 const material = new THREE.MeshStandardMaterial({
-  map: loader.load("./image/earthmap.jpg"),
-  bumpMap: loader.load("./image/earthbump.png"),
+  map: loader.load("/earthmap.jpg"),
+  bumpMap: loader.load("/earthbump.png"),
   bumpScale: 0.04,
 });
 const earthMesh = new THREE.Mesh(geometry, material);
 earthGroup.add(earthMesh);
 
 const lightMat = new THREE.MeshBasicMaterial({
-    map:loader.load('/image/nightearth.jpg'),
+    map:loader.load('/nightearth.jpg'),
     blending: THREE.AdditiveBlending,
 });
 const lightMesh = new THREE.Mesh(geometry, lightMat);
 earthGroup.add(lightMesh);
 
 const cloudMat = new THREE.MeshStandardMaterial({
-  map: loader.load("./image/earthcloudmap.jpg"),
+  map: loader.load("/earthcloudmap.jpg"),
   transparent: true,
   opacity: 0.8,
   blending : THREE.AdditiveBlending,
-  alphaMap: loader.load('./image/cloudmaptrans.png'),
+  alphaMap: loader.load('/cloudmaptrans.png'),
 });
 const cloudMesh = (new THREE.Mesh(geometry, cloudMat));
 cloudMesh.setScale = 2;
@@ -443,43 +443,38 @@ function createAsteroidSprite(emoji) {
     return sprite;
 }
 
-// Add a new function to load the asteroid data
+
+// Complete the loadAsteroidData function
 function loadAsteroidData() {
     fetch('./Recent_close_approach_asteroid_near_earth.json')
         .then(response => response.json())
         .then(asteroidData => {
-            console.log(asteroidData);
+            asteroidData.forEach(asteroid => {
+                const objectDesignation = asteroid["Object designation"];
+                const missDistanceKm = asteroid["Miss distance in km"];
+                const diameter = asteroid["Diameter in m"];
+                const relativeVelocity = asteroid["Relative velocity in km/s"];
+                
+                // Create a sprite for each asteroid
+                const sprite = createAsteroidSprite('☄️');
+                scene.add(sprite);
+                asteroidSprites.push(sprite);
+                
+                // Assign positions based on miss distance and other properties
+                const radius = 1 + missDistanceKm / 384400; // Normalize to Earth-Moon distance (as an example)
+                const angle = Math.random() * Math.PI * 2;
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                const z = Math.random() * 2 - 1; // Random Z between -1 and 1
 
-            // Ensure to reference properties correctly, especially for keys with spaces or special characters
-            const objectDesignation = asteroidData["Object designation"];
-            const missDistanceKm = asteroidData["Miss distance in km"];
-            const diameter = asteroidData["Diameter in m"];
-            const relativeVelocity = asteroidData["Relative\nvelocity in km/s"];
-
-            // Log the asteroid data to verify
-            console.log('Asteroid:', objectDesignation, missDistanceKm, diameter, relativeVelocity);
-
-            // Create a new sprite or mesh for the asteroid
-            const asteroidSprite = createAsteroidSprite('😂');  // You can use another emoji if desired
-            
-            // Position asteroid based on miss distance (assume distance is in km)
-            const distanceFromEarth = 1 + (missDistanceKm / 6371);  // Adjust scale based on Earth's radius (6371 km)
-
-            // Random positioning example for now (you can adjust based on real data)
-            const x = distanceFromEarth * (Math.random() - 0.5);
-            const y = distanceFromEarth * (Math.random() - 0.5);
-            const z = distanceFromEarth * (Math.random() - 0.5);
-
-            // Set asteroid sprite position
-            asteroidSprite.position.set(x, y, z);
-            
-            // Add the asteroid sprite to the scene
-            scene.add(asteroidSprite);
-            asteroidSprites.push(asteroidSprite);  // Store it in the asteroidSprites array for future use
+                // Update sprite positions
+                sprite.position.set(x, y, z);
+            });
         })
-        .catch(error => console.log('Error loading asteroid data:', error));
+        .catch(error => console.error('Error loading asteroid data:', error));
 }
 
+// Call the loadAsteroidData function
 loadAsteroidData();
 
 

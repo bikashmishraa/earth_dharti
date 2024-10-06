@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as satellite from 'satellite.js';
 import getStarfield from "./src/getStarfield.js";
 import { getFreshnelMat } from "./src/getFreshnelMat.js";
-// import {prompt} from "./features/fireball.js";
+
 
 const w = window.innerWidth;
 const h = window.innerHeight;
@@ -422,132 +422,7 @@ function loadSatellitePaths(scene, maxPoints = 54) {
 const button = document.getElementById('path');
 button.addEventListener('click', () => loadSatellitePaths(scene, 54)); // Pass the scene and maxPoints when calling the function
 
-let isTooltipVisible = false; // Initialize tooltip visibility state
 
-let asteroid =[];
-let asteroidSprites=[];
-// Create a function to generate asteroid sprite
-function createAsteroidSprite(emoji) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = 64;
-    canvas.height = 64;
-    context.font = '50px serif';
-    context.fillText(emoji, 10, 50);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({ map: texture });
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(1, 1, 1);  // Adjust the size for asteroid
-
-    return sprite;
-}
-
-
-// Complete the loadAsteroidData function
-function loadAsteroidData() {
-    fetch('./Recent_close_approach_asteroid_near_earth.json')
-        .then(response => response.json())
-        .then(asteroidData => {
-            asteroidData.forEach(asteroid => {
-                const objectDesignation = asteroid["Object designation"];
-                const missDistanceKm = asteroid["Miss distance in km"];
-                const diameter = asteroid["Diameter in m"];
-                const relativeVelocity = asteroid["Relative velocity in km/s"];
-                
-                // Create a sprite for each asteroid
-                const sprite = createAsteroidSprite('☄️');
-                scene.add(sprite);
-                asteroidSprites.push(sprite);
-                
-                // Assign positions based on miss distance and other properties
-                const radius = 1 + missDistanceKm / 384400; // Normalize to Earth-Moon distance (as an example)
-                const angle = Math.random() * Math.PI * 2;
-                const x = radius * Math.cos(angle);
-                const y = radius * Math.sin(angle);
-                const z = Math.random() * 2 - 1; // Random Z between -1 and 1
-
-                // Update sprite positions
-                sprite.position.set(x, y, z);
-            });
-        })
-        .catch(error => console.error('Error loading asteroid data:', error));
-}
-
-// Call the loadAsteroidData function
-loadAsteroidData();
-
-
-// Modify the hover check function to handle asteroids as well
-function checkAsteroidHover() {
-    raycaster.setFromCamera(mouse, camera);
-    
-    // Check if the mouse is hovering over any asteroid
-    const intersects = raycaster.intersectObjects(asteroidSprites, true);
-
-    if (intersects.length > 0) {
-        const asteroid = intersects[0].object.userData;
-
-        tooltip.style.display = 'block';
-        tooltip.style.left = `${mouseX + 15}px`;
-        tooltip.style.top = `${mouseY + 15}px`;
-
-        // Display asteroid data in the tooltip
-        tooltip.innerHTML = `
-            <strong>Asteroid:</strong> ${asteroid.designation} <br />
-            <strong>Diameter:</strong> ${asteroid.diameter} m<br />
-            <strong>Velocity:</strong> ${asteroid.velocity} km/s
-        `;
-    } else {
-        tooltip.style.display = 'none';
-    }
-}
-
-
-// Example of fetching the fireball data and displaying it
-fetch('/cneos_fireball_data.json')
-   .then(response => response.json())
-   .then(data => {
-       displayFireballOnEarth(data, scene, camera);
-   });
-
-export function displayFireballOnEarth(data, scene, camera) {
-    const earthRadius = 6371; // Earth's radius in km
-    const latitude = parseFloat(data["Latitude (deg.)"]);
-    const longitude = parseFloat(data["Longitude (deg.)"]);
-    const altitude = parseFloat(data["Altitude (km)"]);
-
-    // Convert the latitude, longitude, and altitude to 3D coordinates
-    const fireballPosition = latLongToVector3(latitude, longitude, earthRadius, altitude);
-    console.log("Fireball Position:", fireballPosition); // Debugging
-
-    // Create a sphere to represent the fireball
-    const fireballGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const fireballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Consider using Phong or Lambert for lighting effects
-    const fireballMesh = new THREE.Mesh(fireballGeometry, fireballMaterial);
-
-    fireballMesh.position.copy(fireballPosition);
-    scene.add(fireballMesh);
-
-    // Setup raycaster for hover detection
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    window.addEventListener('mousemove', onMouseMove, false);
-
-    function onMouseMove(event) {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObject(fireballMesh);
-
-        if (intersects.length > 0) {
-            const label = createLabel(`Velocity: ${data["Velocity (km/s)"]} km/s`);
-            updateLabelPosition(fireballMesh, camera);
-        }
-    }
-}
 
 
 function animate() {
@@ -561,7 +436,6 @@ function animate() {
 
     updateSatellitePositions();
     checkSatelliteHover();
-    checkAsteroidHover();  // Check for asteroid hover interactions
     followSatellite();
     renderer.render(scene, camera);
 }

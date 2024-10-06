@@ -163,7 +163,7 @@ h1{
     height: 100%;
 }
 
-.features {
+/* .features {
     position: absolute;
     left: 20px;
     bottom: 100px;
@@ -175,7 +175,7 @@ h1{
     border-radius: 20px;
     transition: background-color 0.3s;
     outline: none;
-}
+} */
 
 .btn {
     display: flex;
@@ -187,10 +187,6 @@ h1{
     /* outline: none; */
 }
 
-.btn:hover {
-    background-color: rgba(255, 0, 0, 0.5); 
-    transform: scale(1.1); 
-}
 
 .btn:focus, .btn:active {
   outline: none;    /* Ensures no outline */

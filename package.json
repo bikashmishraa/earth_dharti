@@ -19,6 +19,7 @@
     "bootstrap-icons": "^1.11.3",
     "satellite.js": "^5.0.0",
     "three": "^0.168.0",
+    "threejs": "file:",
     "wix-data": "^0.0.1-security"
   }
 }

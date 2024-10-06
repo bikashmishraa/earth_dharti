@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Astronomical Objects Data</title>
+
+    <style>
+      html {
+        margin: 0;
+        padding: 0;
+        /* overflow: hidden; Prevents scrollbars */
+        height: 100%;
+        width: 100%;
+      }
+
+      #navbar {
+        display: flex;
+        justify-content: space-between;
+        padding-inline: 60px;
+        margin-top: 20px;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        background: transparent; /* Initially transparent */
+        z-index: 1000; /* Ensure the navbar is on top of other elements */
+        transition: background-color 0.3s ease; /* Smooth transition */
+        transition: margin-top 0.3s ease; /* Smooth transition */
+      }
+
+      .logoName {
+        color: white;
+        font-family: "Modern Antiqua";
+      }
+      .logo a {
+        text-decoration: none;
+      }
+
+      #navbar.scrolled {
+        background-color: rgba(25, 25, 25, 0.9);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow */
+        border-radius: 50px;
+        z-index: 1000;
+      }
+
+      #navbar ul {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      #navbar ul li {
+        /* display: inline; */
+        font-size: 22px;
+        font-family: "Katibeh", serif;
+        font-weight: 200;
+      }
+
+      #navbar ul li a {
+        text-decoration: none;
+        color: white;
+        padding: 10px 15px;
+        transition: background-color 0.3s;
+        content: "";
+        width: 100%;
+        position: relative;
+      }
+
+      ul li a::after {
+        content: "";
+        position: absolute;
+        width: 0px;
+        height: 2px;
+        background-color: white;
+        bottom: 4px;
+        left: 7px;
+        transition: width 0.3s ease-in-out;
+      }
+
+      /* On hover, the line expands */
+      ul li a:hover::after {
+        width: 80%;
+      }
+
+      ul li a.active::after {
+        width: 80%;
+      }
+
+      h1 {
+        display: flex;
+        justify-content: center;
+        margin-top: 10%;
+      }
+      .logo {
+        margin-top: 0x;
+        width: 10%;
+        height: 10%;
+      }
+      .logo img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .features {
+        position: absolute;
+        left: 20px;
+        bottom: 100px;
+        z-index: 1000;
+        background-color: none;
+        width: 70px;
+        padding: 10px;
+        border: 1px solid white;
+        border-radius: 20px;
+        outline: none;
+      }
+
+      #meteors_data {
+        margin-left: -21px;
+        /* outline: none; */
+        border: none;
+      }
+
+      .btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: transparent;
+        border: none;
+        transition: transform 0.4s ease-in-out;
+        /* outline: none; */
+      }
+
+      .btn:focus,
+      .btn:active {
+        outline: none; /* Ensures no outline */
+        border: none; /* Ensures no border */
+        box-shadow: none; /* Removes any box-shadow that might appear */
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin: 0;
+        background: url("/stars.png") center center fixed;
+        color: white;
+        display: flex;
+        justify-content: center;
+        position: absolute;
+      }
+
+      #navbar {
+        margin-top: -2px;
+      }
+      #navbar h1 {
+        margin-left: 80px;
+      }
+      #navbar ul {
+        margin-right: 20px;
+      }
+
+      .image-container {
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        padding-bottom: 20px;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 8px;
+        height: auto;
+        object-fit: cover;
+      }
+
+      .grid-column {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 10px;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background-color: transparent;
+        color: white;
+        border: 2px solid wheat;
+        font-size: 16px;
+        padding: 7px 14px;
+        cursor: pointer;
+      }
+
+      p {
+        font: 16px;
+        max-width: 870px;
+        margin: 24px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar">
+      <div class="logo">
+        <a href="/index.html">
+          <h1 class="logoName">DHARTI</h1>
+        </a>
+      </div>
+      <ul>
+        <li><a href="https://dharti-2-0.vercel.app/">HOME</a></li>
+        <li><a href="/satellites.html">SATELLITES</a></li>
+        <li><a href="/meteors.html">METEORS</a></li>
+        <li><a href="/graph.html">GRAPH</a></li>
+        <li><a href="https://dharti-2-0.vercel.app/about/">ABOUT</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h1>Data</h1>
+      <p>
+        The plot effectively showcases the complex dynamics of NEOs, revealing
+        that while size and velocity are critical parameters in understanding
+        these celestial bodies, their relationship is influenced by multiple
+        factors. This analysis can be pivotal for researchers in predicting
+        potential impacts and understanding the characteristics of NEOs over
+        time.
+      </p>
+
+      <div class="grid-column">
+        <div class="image-container">
+          <img src="/asteroid-data-01.png" alt="" />
+        </div>
+        <div class="image-container">
+          <img src="/asteroid-data-02.png" alt="" />
+        </div>
+      </div>
+
+      <a
+        href="https://colab.research.google.com/drive/1oSU4FYdthSOF0Yv5o5A68Kn2rvCktNCK?fbclid=IwY2xjawFvOmJleHRuA2FlbQIxMAABHT6aPLqM_hcA5xSa9uN8lbXe788dQYTJuxlutb6uZVbzO0oz040UDy4tVg_aem_aLOVqzyFHs9qmAgwmBeStQ"
+        target="_blank"
+      >
+        <button>Go to Google Colab</button>
+      </a>
+    </div>
+  </body>
+</html>

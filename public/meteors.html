@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Astronomical Objects Data</title>
+
+    <style>
+      html {
+        margin: 0;
+        padding: 0;
+        /* overflow: hidden; Prevents scrollbars */
+        height: 100%;
+        width: 100%;
+      }
+
+      #navbar {
+        display: flex;
+        justify-content: space-between;
+        padding-inline: 60px;
+        margin-top: 20px;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        background: transparent; /* Initially transparent */
+        z-index: 1000; /* Ensure the navbar is on top of other elements */
+        transition: background-color 0.3s ease; /* Smooth transition */
+        transition: margin-top 0.3s ease; /* Smooth transition */
+      }
+
+      .logoName {
+        color: white;
+        font-family: "Modern Antiqua";
+      }
+      .logo a {
+        text-decoration: none;
+      }
+
+      #navbar.scrolled {
+        background-color: rgba(25, 25, 25, 0.9);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow */
+        border-radius: 50px;
+        z-index: 1000;
+      }
+
+      #navbar ul {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      #navbar ul li {
+        /* display: inline; */
+        font-size: 22px;
+        font-family: "Katibeh", serif;
+        font-weight: 200;
+      }
+
+      #navbar ul li a {
+        text-decoration: none;
+        color: white;
+        padding: 10px 15px;
+        transition: background-color 0.3s;
+        content: "";
+        width: 100%;
+        position: relative;
+      }
+
+      ul li a::after {
+        content: "";
+        position: absolute;
+        width: 0px;
+        height: 2px;
+        background-color: white;
+        bottom: 4px;
+        left: 7px;
+        transition: width 0.3s ease-in-out;
+      }
+
+      /* On hover, the line expands */
+      ul li a:hover::after {
+        width: 80%;
+      }
+
+      ul li a.active::after {
+        width: 80%;
+      }
+
+      table {
+        /* margin: 20px; */
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 8px;
+        border: 1px solid white;
+        text-align: left;
+      }
+      h1 {
+        display: flex;
+        justify-content: center;
+        margin-top: 10%;
+      }
+      .logo {
+        margin-top: 0x;
+        width: 10%;
+        height: 10%;
+      }
+      .logo img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .features {
+        position: absolute;
+        left: 20px;
+        bottom: 100px;
+        z-index: 1000;
+        background-color: none;
+        width: 70px;
+        padding: 10px;
+        border: 1px solid white;
+        border-radius: 20px;
+        outline: none;
+      }
+
+      #meteors_data {
+        margin-left: -21px;
+        /* outline: none; */
+        border: none;
+      }
+
+      .btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: transparent;
+        border: none;
+        transition: transform 0.4s ease-in-out;
+        /* outline: none; */
+      }
+
+      .btn:focus,
+      .btn:active {
+        outline: none; /* Ensures no outline */
+        border: none; /* Ensures no border */
+        box-shadow: none; /* Removes any box-shadow that might appear */
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin: 0;
+        background: url("/stars.png") center center fixed;
+        color: white;
+        display: flex;
+        justify-content: center;
+        position: absolute;
+      }
+
+      #navbar {
+        margin-top: -2px;
+      }
+      #navbar h1 {
+        margin-left: 80px;
+      }
+      #navbar ul {
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar">
+      <div class="logo">
+        <a href="/index.html">
+          <h1 class="logoName">DHARTI</h1>
+        </a>
+      </div>
+      <ul>
+        <li><a href="https://dharti-2-0.vercel.app/">HOME</a></li>
+        <li><a href="/satellites.html">SATELLITES</a></li>
+        <li><a href="/meteors.html">METEORS</a></li>
+        <li><a href="/graph.html">GRAPH</a></li>
+        <li><a href="https://dharti-2-0.vercel.app/about/">ABOUT</a></li>
+      </ul>
+    </div>
+    <div class="meteors">
+      <h1>Astronomical Objects Data</h1>
+      <table id="objectsTable">
+        <thead>
+          <tr>
+            <th>Object Name</th>
+            <th>Epoch (TDB)</th>
+            <th>Time of Perihelion (TDB)</th>
+            <th>Eccentricity</th>
+            <th>Inclination (deg)</th>
+            <th>Argument of Perihelion (deg)</th>
+            <th>Longitude of Ascending Node (deg)</th>
+            <th>Perihelion Distance (AU)</th>
+            <th>Aphelion Distance (AU)</th>
+            <th>Orbital Period (Years)</th>
+            <th>MOID (AU)</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be inserted here dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const tableBody = document.querySelector("#objectsTable tbody");
+
+        // Fetch the JSON data from the file
+        fetch("/meteors.json")
+          .then((response) => response.json())
+          .then((data) => {
+            data.forEach((object) => {
+              // Create a new row
+              const tr = document.createElement("tr");
+
+              // Create and append each cell for the object data
+              const cells = [
+                object.object_name,
+                object.epoch_tdb,
+                object.tp_tdb,
+                object.e,
+                object.i_deg,
+                object.w_deg,
+                object.node_deg,
+                object.q_au_1,
+                object.q_au_2,
+                object.p_yr,
+                object.moid_au,
+                object.ref,
+              ];
+
+              cells.forEach((cellData) => {
+                const td = document.createElement("td");
+                td.textContent = cellData;
+                tr.appendChild(td);
+              });
+
+              // Append the row to the table body
+              tableBody.appendChild(tr);
+            });
+          })
+          .catch((error) =>
+            console.error("Error fetching the JSON data:", error)
+          );
+      });
+    </script>
+  </body>
+</html>

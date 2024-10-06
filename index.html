@@ -89,21 +89,25 @@
           />
         </svg>
       </button>
-      <button class="btn" id="ast_data_visual" title="Visualize Asteroid Data">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="30"
-          height="30"
-          fill="white"
-          class="bi bi-graph-up"
-          viewBox="0 0 16 16"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"
-          />
-        </svg>
-      </button>
+
+      <a href="/graph.html" style="text-decoration: none">
+        <button class="btn" title="Visualize Asteroid Data">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="30"
+            height="30"
+            fill="white"
+            class="bi bi-graph-up"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"
+            />
+          </svg>
+        </button>
+      </a>
+
       <button class="btn" id="Home" title="Return Home">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +122,7 @@
           />
         </svg>
       </button>
-      <a href="./src/satellites.html" style="text-decoration: none">
+      <a href="/satellites.html" style="text-decoration: none">
         <button class="btn" id="satellite_data" title="Satellite Data">
           <i
             class="fa-solid fa-satellite"
@@ -126,7 +130,7 @@
           ></i>
         </button>
       </a>
-      <a href="./src/meteors.html" style="text-decoration: none">
+      <a href="/meteors.html" style="text-decoration: none">
         <button class="btn" id="meteors_data" title="Meteors Data">
           <i
             class="fa-solid fa-meteor"
@@ -163,11 +167,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-
-    <div id="astroid-data-container">
-      <img src="/asteroid-data-01.png" alt="" />
-      <img src="/asteroid-data-02.png" alt="" />
     </div>
 
     <script type="module" src="/script.js"></script>

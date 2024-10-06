@@ -23,7 +23,7 @@ html {
 
 body {
   margin: 0;
-  background: url("image/stars.png") center center fixed;
+  background: url("/stars.png") center center fixed;
   color: white;
   display: flex;
   justify-content: center;
